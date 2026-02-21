@@ -24,7 +24,7 @@ function UtilityModule.Wait()
     RunService.PostSimulation:Wait()
 end
 
-function UtilityModule.MoveToPoint(Direction, Target, Time, ShouldYieldTillFinished)
+function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished)
     local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
     local Humanoid = Character and Character:FindFirstChildWhichIsA("Humanoid")
 
@@ -32,7 +32,7 @@ function UtilityModule.MoveToPoint(Direction, Target, Time, ShouldYieldTillFinis
         return
     end
 
-    if Direction == "Tween" then
+    if Method == "Tween" then
         Time = Time or 1
 
         local TweenInfoData = TweenInfo.new(Time, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
@@ -60,7 +60,7 @@ function UtilityModule.MoveToPoint(Direction, Target, Time, ShouldYieldTillFinis
         task.wait()
     end
 
-    if Direction == "Move" and Humanoid then
+    if Method == "Move" and Humanoid then
         ActiveMoveToken += 1
 
         local ThisMove = ActiveMoveToken
