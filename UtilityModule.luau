@@ -72,6 +72,27 @@ function UtilityModule.MoveToPoint(Direction, Target, Time, ShouldYieldTillFinis
             end
         end
     end
+
+    function UtilityModule.SortByNumberInName(Table, Order)
+        if not Table then
+            return
+        end
+
+        table.sort(Table, function(A, B)
+            local NameA = tostring(A.Name or "")
+            local NameB = tostring(B.Name or "")
+
+            local NumberA = tonumber(NameA:match("%d+")) or 0
+            local NumberB = tonumber(NameB:match("%d+")) or 0
+
+            if Order == "Ascending" then
+                return NumberA < NumberB
+            else
+                return NumberA > NumberB
+            end
+        end)
+    end
 end
 
 return UtilityModule
+
