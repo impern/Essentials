@@ -6,6 +6,7 @@ local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
 local UtilityModule = {}
+local ActiveMoveToken = 0
 
 function UtilityModule.SafeDestroy(Object)
     if Object and Object.Destroy then
@@ -55,44 +56,75 @@ function UtilityModule.MoveToPoint(Direction, Target, Time, ShouldYieldTillFinis
                 UtilityModule.Wait()
             end
         end
+
+        task.wait()
     end
 
     if Direction == "Move" and Humanoid then
-        Humanoid:MoveTo(Target + Vector3.new(0, 3, 0))
+        ActiveMoveToken += 1
 
-        if ShouldYieldTillFinished then
-            local Arrived = false
+        local ThisMove = ActiveMoveToken
+        local Finished = false
 
-            Humanoid.MoveToFinished:Once(function(Reached)
-                Arrived = true
-            end)
+        local Connection
 
-            while not Arrived do
-                UtilityModule.Wait()
+        Humanoid:MoveTo(Target)
+
+        Connection = RunService.PostSimulation:Connect(function()
+            if ThisMove ~= ActiveMoveToken then
+                UtilityModule.SafeCleanup(Connection)
+                Finished = true
+                return
             end
-        end
-    end
 
-    function UtilityModule.SortByNumberInName(Table, Order)
-        if not Table then
-            return
-        end
+            local Distance = (HumanoidRootPart.Position - Target).Magnitude
 
-        table.sort(Table, function(A, B)
-            local NameA = tostring(A.Name or "")
-            local NameB = tostring(B.Name or "")
+            if Distance <= 2 then
+                UtilityModule.SafeCleanup(Connection)
+                Finished = true
+                return
+            end
 
-            local NumberA = tonumber(NameA:match("%d+")) or 0
-            local NumberB = tonumber(NameB:match("%d+")) or 0
-
-            if Order == "Ascending" then
-                return NumberA < NumberB
-            else
-                return NumberA > NumberB
+            if Humanoid.MoveDirection.Magnitude == 0 and Distance > 3 then
+                Humanoid:MoveTo(Target)
             end
         end)
+
+        Humanoid.MoveToFinished:Once(function()
+            if ThisMove == ActiveMoveToken then
+                UtilityModule.SafeCleanup(Connection)
+                Finished = true
+            end
+        end)
+
+        if ShouldYieldTillFinished then
+            repeat
+                UtilityModule.Wait()
+            until Finished
+        end
+
+        task.wait()
     end
 end
 
-return UtilityModule
+function UtilityModule.SortByNumberInName(Table, Order)
+    if not Table then
+        return
+    end
 
+    table.sort(Table, function(A, B)
+        local NameA = tostring(A.Name or "")
+        local NameB = tostring(B.Name or "")
+
+        local NumberA = tonumber(NameA:match("%d+")) or 0
+        local NumberB = tonumber(NameB:match("%d+")) or 0
+
+        if Order == "Ascending" then
+            return NumberA < NumberB
+        else
+            return NumberA > NumberB
+        end
+    end)
+end
+
+return UtilityModule
