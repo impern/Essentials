@@ -36,7 +36,7 @@ function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished
         Time = Time or 1
 
         local TweenInfoData = TweenInfo.new(Time, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-        local TweenGoal = {CFrame = Target + Vector3.new(0, 3, 0)}
+        local TweenGoal = {CFrame = Target}
 
         HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
         HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
