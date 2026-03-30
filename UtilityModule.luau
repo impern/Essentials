@@ -106,36 +106,31 @@ function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished
         task.wait()
     end
 end
-
 function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFinished, FinishDelay)
-    MoveToken += 1
-    local ThisToken = MoveToken
+
+    ActiveMoveToken += 1
+    local ThisMove = ActiveMoveToken
 
     if Method == "Tween" then
         UtilityModule.MoveToPoint("Tween", CFrame.new(Destination), Time, YieldTillFinished)
-
         return true
     end
 
     local Player = Players.LocalPlayer
     local Character = Player.Character or Player.CharacterAdded:Wait()
     local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-
     local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
 
     if not Humanoid or not HumanoidRootPart then
         return false
     end
 
-    local AgentJumpHeight = Humanoid.JumpHeight or 7.2
-    local AgentMaxSlope = 45
-
     local Path = PathfindingService:CreatePath({
         AgentRadius = 2,
         AgentHeight = 5,
         AgentCanJump = true,
-        AgentJumpHeight = AgentJumpHeight,
-        AgentMaxSlope = AgentMaxSlope
+        AgentJumpHeight = Humanoid.JumpHeight or 7.2,
+        AgentMaxSlope = 45
     })
 
     Path:ComputeAsync(HumanoidRootPart.Position, Destination)
@@ -146,13 +141,18 @@ function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFini
 
     local function MoveThroughWaypoints()
         for _, Waypoint in Path:GetWaypoints() do
+
+            if ThisMove ~= ActiveMoveToken then
+                return
+            end
+
             UtilityModule.MoveToPoint("Move", Waypoint.Position, nil, true)
-    
+
             if Waypoint.Action == Enum.PathWaypointAction.Jump then
                 Humanoid.Jump = true
             end
         end
-    
+
         if FinishDelay and FinishDelay > 0 then
             task.wait(FinishDelay)
         end
