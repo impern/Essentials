@@ -8,6 +8,7 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
 local UtilityModule = {}
 local ActiveMoveToken = 0
+local MoveToken = 0
 
 function UtilityModule.SafeDestroy(Object)
     if Object and Object.Destroy then
@@ -105,6 +106,9 @@ function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished
 end
 
 function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFinished, FinishDelay)
+    MoveToken += 1
+    local ThisToken = MoveToken
+
     if Method == "Tween" then
         UtilityModule.MoveToPoint("Tween", CFrame.new(Destination), Time, YieldTillFinished)
 
@@ -141,11 +145,11 @@ function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFini
     local function MoveThroughWaypoints()
         for _, Waypoint in Path:GetWaypoints() do
             while (HumanoidRootPart.Position - Waypoint.Position).Magnitude > 2 do
+                if ThisToken ~= MoveToken then return end 
                 Humanoid:MoveTo(Waypoint.Position)
                 if Waypoint.Action == Enum.PathWaypointAction.Jump then
                     Humanoid.Jump = true
                 end
-
                 RunService.Heartbeat:Wait()
             end
         end
@@ -154,6 +158,7 @@ function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFini
             task.wait(FinishDelay)
         end
     end
+
 
     if YieldTillFinished then
         MoveThroughWaypoints()
