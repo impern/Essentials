@@ -21,10 +21,6 @@ function UtilityModule.SafeCleanup(Connection)
     end
 end
 
-function UtilityModule.Wait()
-    RunService.PostSimulation:Wait()
-end
-
 function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished)
     local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
     local Humanoid = Character and Character:FindFirstChildWhichIsA("Humanoid")
@@ -54,7 +50,7 @@ function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished
             end)
 
             while not Completed do
-                UtilityModule.Wait()
+                RunService.Heartbeat:Wait()
             end
         end
 
@@ -100,7 +96,7 @@ function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished
 
         if ShouldYieldTillFinished then
             repeat
-                UtilityModule.Wait()
+                RunService.Heartbeat:Wait()
             until Finished
         end
 
@@ -108,7 +104,13 @@ function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished
     end
 end
 
-function UtilityModule.SmartMoveToPoint(Destination, YieldTillFinished, FinishDelay)
+function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFinished, FinishDelay)
+    if Method == "Tween" then
+        UtilityModule.MoveToPoint("Tween", CFrame.new(Destination), Time, YieldTillFinished)
+
+        return true
+    end
+
     local Player = Players.LocalPlayer
     local Character = Player.Character or Player.CharacterAdded:Wait()
     local Humanoid = Character:FindFirstChildOfClass("Humanoid")
@@ -144,7 +146,7 @@ function UtilityModule.SmartMoveToPoint(Destination, YieldTillFinished, FinishDe
                     Humanoid.Jump = true
                 end
 
-                RunService.PostSimulation:Wait()
+                RunService.Heartbeat:Wait()
             end
         end
 
