@@ -4,7 +4,6 @@ local TweenService = game:GetService("TweenService")
 local PathfindingService = game:GetService("PathfindingService")
 
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
 local UtilityModule = {}
 local ActiveMoveToken = 0
@@ -23,8 +22,11 @@ function UtilityModule.SafeCleanup(Connection)
 end
 
 function UtilityModule.MoveToPoint(Method, Target, Time, ShouldYieldTillFinished)
-    local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-    local Humanoid = Character and Character:FindFirstChildWhichIsA("Humanoid")
+    local Character = Players.LocalPlayer.Character
+    if not Character then return false end
+    
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
 
     if not HumanoidRootPart then
         return
