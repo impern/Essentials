@@ -144,28 +144,34 @@ function UtilityModule.SmartMoveToPoint(Method, Destination, Time, YieldTillFini
 
     local function MoveThroughWaypoints()
         for _, Waypoint in ipairs(Path:GetWaypoints()) do
-            while (HumanoidRootPart.Position - Waypoint.Position).Magnitude > 2 do
-                if ThisToken ~= MoveToken then
-                    return false
-                end
-
-                Humanoid:MoveTo(Waypoint.Position)
-
-                if Waypoint.Action == Enum.PathWaypointAction.Jump then
-                    Humanoid.Jump = true
-                end
-
-                RunService.Heartbeat:Wait()
+            if ThisToken ~= MoveToken then
+                return
             end
+
+            Humanoid:MoveTo(Waypoint.Position)
+
+            if Waypoint.Action == Enum.PathWaypointAction.Jump then
+                Humanoid.Jump = true
+            end
+
+            local Reached = false
+
+            local Connection
+            Connection = Humanoid.MoveToFinished:Connect(function()
+                Reached = true
+                UtilityModule.SafeCleanup(Connection)
+            end)
+
+            repeat
+                RunService.Heartbeat:Wait()
+            until Reached or ThisToken ~= MoveToken
         end
 
         if FinishDelay and FinishDelay > 0 then
             task.wait(FinishDelay)
         end
-
-        return true
     end
-
+    
     if YieldTillFinished then
         MoveThroughWaypoints()
         return true
